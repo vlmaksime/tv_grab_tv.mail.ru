@@ -22,7 +22,7 @@ group.add_argument('-v', '--version', action='store_true', help='Print version')
 parser.add_argument('--quiet', action='store_true', help='Suppress all progress information')
 parser.add_argument('--output', metavar='FILENAME', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help='Redirect the xmltv output to the specified file. Otherwise output goes to stdout')
 parser.add_argument('--days', metavar='X', type=int, default=0, help='Supply data for X days')
-parser.add_argument('--offset', metavar='X', type=int, default=0, help='Start with data for day today plus X days')
+#parser.add_argument('--offset', metavar='X', type=int, default=0, help='Start with data for day today plus X days')
 parser.add_argument('--config-file', metavar='FILENAME', default='tv_mail_ru.conf', help='The grabber shall read all configuration data from the specified file')
 #manualconfig
 parser.add_argument('--configure', action='store_true', help='Allow the user to answer questions regarding the operation of the grabber')
@@ -69,7 +69,7 @@ def log(message):
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.3'
+        self._version = '0.1.1'
         self._description = 'tv.mail.ru xmltv grabber'
         self._capabilities = ['baseline', 'manualconfig']
 
@@ -95,7 +95,9 @@ class tv_mail_ru():
         parser = configparser.SafeConfigParser()
         config_file = open(self.__get_config_path(), "w")
 
-        
+        parser.add_section('general')
+        parser.set('general', 'conf_ver', '1')
+
         parser.add_section('account')
 
         email = raw_input('Enter e-mail: ')
@@ -108,12 +110,28 @@ class tv_mail_ru():
             region_ids = self.__select_regions()
         else:
             region_ids = ''
+            
+        if region_ids:
+            print('Selected regions: %s' % region_ids)
+        else:
+            print('The default region will be used')
 
         parser.add_section('settings')
         parser.set('settings', 'date_delay', '0')
         parser.set('settings', 'event_delay', '0.1')
         parser.set('settings', 'region_ids', region_ids)
-                    
+
+        parser.set('settings', 'des_week', '0')
+        parser.set('settings', 'des_today', '0')
+        parser.set('settings', 'des_tommorow', '0')
+        if query_yes_no('Get the description of the program for a week?') == 'yes':
+            parser.set('settings', 'des_week', '1')
+        else:
+            if query_yes_no('Get the program description for today?') == 'yes':
+                parser.set('settings', 'des_today', '1')
+            if query_yes_no('Get the description of the program for tomorrow?') == 'yes':
+                parser.set('settings', 'des_tommorow', '1')
+        
         parser.write(config_file)
         sys.exit(0)
 
@@ -273,15 +291,6 @@ class tv_mail_ru():
                 prefix = '%s-' % (value['url'].replace('/',''))
         return prefix
 
-    def get_regions( self ):
-        regions = []
-        #regions.append({'id':'',  'title':''})          #По умолчанию
-        regions.append({'id':'270',  'title':'moskva'})  #Москва
-        regions.append({'id':'70',  'title':'odessa'})  #Донецк
-        #regions.append({'id':'265', 'title':'kiev'})   #Киев
-
-        return regions
-
     def __get_url_data( self, url, params='' ):
         count = 0
         max_count = 10
@@ -317,7 +326,8 @@ class tv_mail_ru():
 
                 sleep(self.conf['date_delay'])
 
-                today = True#(date.get('today') == 1)
+                today = (date.get('today') == 1)
+                tomorrow = (date.get('tomorrow') == 1)
 
                 if date.get('passed') or (date_count >= args.days and args.days != 0):
                     continue
@@ -384,9 +394,9 @@ class tv_mail_ru():
                             event_data['sub-title'] = [(event['episode_title'], 'ru')]
 
 
-                        if args.description and today and event['id']:
+                        if self.conf['des_week'] or today and self.conf['des_today'] or tomorrow and self.conf['des_tomorrow']:
                             sleep(self.conf['event_delay'])
-                            self.add_event_description(event_data, event['id'], region['id'])
+                            self.add_event_description(event_data, event['id'], region_id)
                         last_evets[channel_id] = event_data
 
                 first_date = False
@@ -460,7 +470,7 @@ class tv_mail_ru():
         url = 'https://tv.mail.ru/ajax/event/'
         params = {'id': event_id,
                   'region_id': region_id}
-        r = self._get_url_data(url, params=params)
+        r = self.__get_url_data(url, params=params)
         if r.status_code == requests.codes.ok:
             return r.json()
         else:
@@ -553,9 +563,12 @@ class tv_mail_ru():
         region_ids = parser.get('settings', 'region_ids').split(', ')
         if len(region_ids) == 0:
             region_ids.append('')
-            
         conf['regions'] = region_ids
-       
+
+        conf['des_week'] = parser.getboolean('settings', 'des_week')
+        conf['des_today'] = parser.getboolean('settings', 'des_today')
+        conf['des_tomorrow'] = parser.getboolean('settings', 'des_tommorow')
+   
         return conf
 
 if __name__ == "__main__":
