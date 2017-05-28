@@ -7,7 +7,7 @@ import requests
 import os
 import configparser
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from time import sleep
 
 parser = argparse.ArgumentParser(description='XMLTV Grabber for tv.mail.ru')
@@ -22,7 +22,7 @@ group.add_argument('-v', '--version', action='store_true', help='Print version')
 parser.add_argument('--quiet', action='store_true', help='Suppress all progress information')
 parser.add_argument('--output', metavar='FILENAME', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help='Redirect the xmltv output to the specified file. Otherwise output goes to stdout')
 parser.add_argument('--days', metavar='X', type=int, default=0, help='Supply data for X days')
-#parser.add_argument('--offset', metavar='X', type=int, default=0, help='Start with data for day today plus X days')
+parser.add_argument('--offset', metavar='X', type=int, default=0, help='Start with data for day today plus X days')
 parser.add_argument('--config-file', metavar='FILENAME', default='tv_mail_ru.conf', help='The grabber shall read all configuration data from the specified file')
 #manualconfig
 parser.add_argument('--configure', action='store_true', help='Allow the user to answer questions regarding the operation of the grabber')
@@ -63,14 +63,17 @@ def query_yes_no(question, default="yes"):
 
 def log(message):
     if not args.quiet:
-        # print(message)
+        sys.stdout.write(message.encode('utf-8') + '\n')
         pass
+        
+def error(message):
+    sys.stderr.write(message.encode('utf-8') + '\n')
         
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.1.1'
-        self._description = 'tv.mail.ru xmltv grabber'
+        self._version = '0.2.1'
+        self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
         self.base_url = 'https://tv.mail.ru/'
@@ -93,7 +96,7 @@ class tv_mail_ru():
 
     def configure( self ):
         parser = configparser.SafeConfigParser()
-        config_file = open(self.__get_config_path(), "w")
+        config_file = open(self.__get_config_path(config_file), "w")
 
         parser.add_section('general')
         parser.set('general', 'conf_ver', '1')
@@ -112,13 +115,13 @@ class tv_mail_ru():
             region_ids = ''
             
         if region_ids:
-            print('Selected regions: %s' % region_ids)
+             sys.stdout.write('Selected regions: %s' % region_ids)
         else:
-            print('The default region will be used')
+            sys.stdout.write('The default region will be used')
 
         parser.add_section('settings')
-        parser.set('settings', 'date_delay', '0')
-        parser.set('settings', 'event_delay', '0.1')
+        parser.set('settings', 'date_delay', '0.3')
+        parser.set('settings', 'event_delay', '0.3')
         parser.set('settings', 'region_ids', region_ids)
 
         parser.set('settings', 'des_week', '0')
@@ -135,15 +138,13 @@ class tv_mail_ru():
         parser.write(config_file)
         sys.exit(0)
 
-    def __get_config_path( self ):
-        config_dir = os.path.join(os.path.expanduser( '~'), '.xmltv')
+    def __get_config_path( self, config_file ):
+        config_dir = os.path.join(os.path.expanduser('~'), '.xmltv')
 
         if not os.path.exists(config_dir):
             os.makedirs(config_dir)
 
-        config_file = (os.path.join(config_dir, args.config_file))
-        
-        return config_file
+        return os.path.join(config_dir, config_file)
 
     def __select_regions(self):
         url = 'https://portal.mail.ru/RegionSuggest'
@@ -165,16 +166,16 @@ class tv_mail_ru():
                         if region_id:
                             regions += ', ' + region_id
                     else:
-                        print('Region not fount')
+                        sys.stdout.write('Region not fount')
             enter_region = (query_yes_no('Do you want to add another region?') == 'yes')
         return regions[2:]
             
     def __show_region_list(self, region_list, regions, title):
         if len(region_list) > 0:
-            print(title)
+            sys.stdout.write(title)
             for region_id in region_list:
                 region_name = self.__get_region_name(region_id, regions)
-                print('id: %s , name: %s' % (region_id, region_name) ) 
+                sys.stdout.write('id: %s , name: %s' % (region_id, region_name) ) 
         
     def __get_region_name( self, region_id, regions ):
         region_info = regions.get(region_id)
@@ -194,52 +195,309 @@ class tv_mail_ru():
 
         return region_name
     
-    def get_category( self, genre ):
-
-        if genre == u'драма':
-            result = "Drama"
-        elif genre == u'приключения':
-            result = "Adventure"
-        elif genre == u'мелодрама':
-            result = "Melodrama"
-        elif genre == u'триллер':
-            result = "Thriller"
-        elif genre == u'детективный':
-            result = "Detective"
-        elif genre == u'семейный':
+    def get_category( self, genre, title ):
+    
+        #01 Movie / Drama
+        elif genre in [u'']:
             result = "Movie"
-        elif genre == u'комедия':
-            result = "Comedy"
-        elif genre == u'военный':
+        elif genre in [u'драма']:
+            result = "Drama"
+        # elif genre in [u'']:
+            # result = "Detective"
+        elif genre in [u'триллер', u'боевик']:
+            result = "Thriller"
+        elif genre in [u'приключения']:
+            result = "Adventure"
+        elif genre in [u'вестерн']:
+            result = "Western"
+        elif genre in [u'военный']:
             result = "War"
+        # elif genre in [u'']:
+            # result = "Science fiction"
+        # elif genre in [u'']:
+            # result = "Fantasy"
+        elif genre in [u'ужасы']:
+            result = "Horror"
+        elif genre in [u'комедия']:
+            result = "Comedy"
+        # elif genre in [u'']:
+            # result = "Soap"
+        elif genre in [u'мелодрама']:
+            result = "Melodrama"
+        # elif genre in [u'']:
+            # result = "Folkloric"
+        # elif genre in [u'']:
+            # result = "Romance"
+        # elif genre in [u'']:
+            # result = "Serious"
+        # elif genre in [u'']:
+            # result = "Classical"
+        # elif genre in [u'']:
+            # result = "Religious"
+        # elif genre in [u'']:
+            # result = "Historical movie"
+        # elif genre in [u'']:
+            # result = "Adult movie"
+
+        #02 News / Current affairs
+        # elif genre in [u'']:
+            # result = "News"
+        # elif genre in [u'']:
+            # result = "Current affairs"
+        # elif genre in [u'']:
+            # result = "Weather report"
+        # elif genre in [u'']:
+            # result = "News magazine"
+        # elif genre in [u'']:
+            # result = "Documentary"
+        # elif genre in [u'']:
+            # result = "Discussion"
+        # elif genre in [u'']:
+            # result = "Interview"
+        # elif genre in [u'']:
+            # result = "Debate"
+        # elif genre in [u'']:
+            # result = "News / Current Affairs"
+
+        #03 Show / Game show
+        # elif genre in [u'']:
+            # result = "Show"
+        # elif genre in [u'']:
+            # result = "Game show"
+        # elif genre in [u'']:
+            # result = "Quiz"
+        # elif genre in [u'']:
+            # result = "Contest"
+        # elif genre in [u'']:
+            # result = "Variety show"
+        elif genre in [u'ток-шоу']:
+            result = "Talk show"
+        # elif genre in [u'']:
+            # result = "Show / Game show"
+
+        #04 Sports
+        elif genre in [u'спорт']:
+            result = "Sports"
+        # elif genre in [u'']:
+            # result = "Special events (Olympic Games, World Cup, etc.)"
+        # elif genre in [u'']:
+            # result = "Sports magazines"
+        # elif genre in [u'']:
+            # result = "Football"
+        # elif genre in [u'']:
+            # result = "Soccer"
+        # elif genre in [u'']:
+            # result = "Tennis"
+        # elif genre in [u'']:
+            # result = "Squash"
+        # elif genre in [u'']:
+            # result = "Team sports (excluding football)"
+        # elif genre in [u'']:
+            # result = "Athletics"
+        # elif genre in [u'']:
+            # result = "Motor sport"
+        # elif genre in [u'']:
+            # result = "Water sport"
+        # elif genre in [u'']:
+            # result = "Winter sports"
+        # elif genre in [u'']:
+            # result = "Equestrian"
+        # elif genre in [u'']:
+            # result = "Martial sports"
+
+        #05 Children's / Youth programs
+        # elif genre in [u'']:
+            # result = "Children's / Youth programs"
+        # elif genre in [u'']:
+            # result = "Pre-school children's programs"
+        # elif genre in [u'']:
+            # result = "Entertainment programs for 6 to 14"
+        # elif genre in [u'']:
+            # result = "Entertainment programs for 10 to 16"
+        # elif genre in [u'']:
+            # result = "Informational"
+        # elif genre in [u'']:
+            # result = "Educational"
+        # elif genre in [u'']:
+            # result = "School programs"
+        elif genre in [u'мультфильмы']:
+            result = "Cartoons"
+        # elif genre in [u'']:
+            # result = "Puppets"
+
+        #06 Music / Ballet / Dance
+        # elif genre in [u'']:
+            # result = "Music"
+        # elif genre in [u'']:
+            # result = "Ballet"
+        # elif genre in [u'']:
+            # result = "Dance"
+        # elif genre in [u'']:
+            # result = "Rock"
+        # elif genre in [u'']:
+            # result = "Pop"
+        # elif genre in [u'']:
+            # result = "Serious music"
+        # elif genre in [u'']:
+            # result = "Classical music"
+        # elif genre in [u'']:
+            # result = "Folk"
+        # elif genre in [u'']:
+            # result = "Traditional music"
+        # elif genre in [u'']:
+            # result = "Jazz"
+        # elif genre in [u'']:
+            # result = "Musical"
+        # elif genre in [u'']:
+            # result = "Opera"
+        # elif genre in [u'']:
+            # result = "Ballet"
+        # elif genre in [u'']:
+            # result = "Music / Ballet / Dance"
+
+        #07 Arts / Culture (without music)
+        # elif genre in [u'']:
+            # result = "Arts"
+        # elif genre in [u'']:
+            # result = "Culture (without music)"
+        # elif genre in [u'']:
+            # result = "Performing arts"
+        # elif genre in [u'']:
+            # result = "Fine arts"
+        # elif genre in [u'']:
+            # result = "Religion"
+        # elif genre in [u'']:
+            # result = "Popular culture"
+        # elif genre in [u'']:
+            # result = "Traditional arts"
+        # elif genre in [u'']:
+            # result = "Literature"
+        # elif genre in [u'']:
+            # result = "Film"
+        # elif genre in [u'']:
+            # result = "Cinema"
+        # elif genre in [u'']:
+            # result = "Experimental film"
+        # elif genre in [u'']:
+            # result = "Video"
+        # elif genre in [u'']:
+            # result = "Broadcasting"
+        # elif genre in [u'']:
+            # result = "Press"
+        # elif genre in [u'']:
+            # result = "New media"
+        # elif genre in [u'']:
+            # result = "Arts magazines"
+        # elif genre in [u'']:
+            # result = "Culture magazines"
+        # elif genre in [u'']:
+            # result = "Fashion"
+        # elif genre in [u'']:
+            # result = "Arts / Culture (without music)"
+
+        #08 Social / Political issues / Economics
+        # elif genre in [u'']:
+            # result = "Social"
+        # elif genre in [u'']:
+            # result = "Political issues"
+        # elif genre in [u'']:
+            # result = "Economics"
+        # elif genre in [u'']:
+            # result = "Magazines"
+        # elif genre in [u'']:
+            # result = "Reports"
+        # elif genre in [u'']:
+            # result = "Documentary"
+        # elif genre in [u'']:
+            # result = "Economics"
+        # elif genre in [u'']:
+            # result = "Social advisory"
+        # elif genre in [u'']:
+            # result = "Remarkable people"
+        # elif genre in [u'']:
+            # result = "Social / Political issues / Economics"
+
+        #09 Education / Science / Factual topics
+        # elif genre in [u'']:
+            # result = "Education"
+        # elif genre in [u'']:
+            # result = "Science"
+        # elif genre in [u'']:
+            # result = "Factual topics"
+        # elif genre in [u'']:
+            # result = "Nature"
+        # elif genre in [u'']:
+            # result = "Animals"
+        # elif genre in [u'']:
+            # result = "Environment"
+        # elif genre in [u'']:
+            # result = "Technology"
+        # elif genre in [u'']:
+            # result = "Natural sciences"
+        # elif genre in [u'']:
+            # result = "Medicine"
+        # elif genre in [u'']:
+            # result = "Physiology"
+        # elif genre in [u'']:
+            # result = "Psychology"
+        # elif genre in [u'']:
+            # result = "Foreign countries"
+        # elif genre in [u'']:
+            # result = "Expeditions"
+        # elif genre in [u'']:
+            # result = "Social"
+        # elif genre in [u'']:
+            # result = "Spiritual sciences"
+        # elif genre in [u'']:
+            # result = "Further education"
+        # elif genre in [u'']:
+            # result = "Languages"
+        # elif genre in [u'']:
+            # result = "Education / Science / Factual topics"
+
+        #10 Leisure hobbies
+        # elif genre in [u'']:
+            # result = "Leisure hobbies"
+        # elif genre in [u'']:
+            # result = "Tourism / Travel"
+        # elif genre in [u'']:
+            # result = "Handicraft"
+        # elif genre in [u'']:
+            # result = "Motoring"
+        # elif genre in [u'']:
+            # result = "Fitness and health"
+        # elif genre in [u'']:
+            # result = "Cooking"
+        # elif genre in [u'']:
+            # result = "Advertisement / Shopping"
+        # elif genre in [u'']:
+            # result = "Gardening"
+        # elif genre in [u'']:
+            # result = "Leisure hobbies"
+
+        # elif genre == u'детективный':
+            # result = "Detective"
+        # elif genre == u'документальное':
+            # result = "Documentary"
+        # elif genre == u'фантастика':
+            # result = "Science fiction"
+        # elif genre == u'фэнтези':
+            # result = "Fantasy"
+        # elif genre = u'детектив':
+            # result = "Detective"
+        # elif genre in (u'боевик', u'криминал', u'мистика', u'семейный', u'криминал', u'мюзикл'):
+            # result = "Movie"
+        # elif genre == u'исторический':
+            # result = "Historical movie"
+        # elif genre == u'новостное':
+            # result = "News"
+
         elif genre == u'детский':
             result = "Children's / Youth programs"
-        elif genre == u'документальное':
-            result = "Documentary"
-        elif genre == u'фантастика':
-            result = "Science fiction"
-        elif genre == u'фэнтези':
-            result = "Fantasy"
 
-        # elif genre == u'':
-            # result = "News / Current affairs"
-        # elif genre == u'':
-            # result = "Show / Games"
-        # elif genre == u'':
-            # result = "Sports"
-        # elif genre == u'':
-            # result = "Music"
-        # elif genre == u'':
-            # result = "Art / Culture"
-        # elif genre == u'':
-            # result = "Social / Political issues / Economics"
-        # elif genre == u'':
-            # result = "Leisure hobbies"
-        # elif genre == u'':
-            # result = "Special characteristics"
         else:
             result = genre
-            log('uncnown genre %s ' % genre)
+            error('unknown genre "%s" at "%s" ' % (genre, title) )
         return result
 
     def __get_channels( self, region_id ):
@@ -293,15 +551,16 @@ class tv_mail_ru():
 
     def __get_url_data( self, url, params='' ):
         count = 0
-        max_count = 10
-        read_delay = 1.5
+        max_count = 5
+        read_delay = 0.5
         while count < max_count:
             r = self.s.get(url, params=params)
+            # error('Read code %s, url: %s' % (r.status_code, r.url))
             if r.status_code == requests.codes.ok:
                 return r
 
             count += 1
-            sleep(read_delay)
+            sleep(read_delay * count)
         return r
 
     def __get_events( self, region_id ):
@@ -438,7 +697,11 @@ class tv_mail_ru():
         r = self.s.get(url, cookies = cookies)
     
     def main( self ):
-    
+        config_file = self.__get_config_path(args.config_file)
+        if not os.path.exists(config_file):
+            error('Configuration file "%s" not fount' % (config_file))
+            sys.exit(1)
+   
         self.conf = self.__read_config(args.config_file)
         self.__init_session()
  
@@ -448,29 +711,171 @@ class tv_mail_ru():
         self.str_guest  = u'Участники'
         
         if self .__web_login():
-            log('Login failure')
+            log('Login success')
         else:
-            sys.stderr.write('Login failure')
+            error('Login failure')
             sys.exit(1)
+        
+        self.data = {}
         
         writer = xmltv.Writer()
         for region_id in self.conf['regions']:
             log('Read region_id = %s' % region_id)
-
             self.__web_read_region_cookies(region_id)
+            self.__load_program(region_id)
             
-            for channel in self.__get_channels(region_id):
-                writer.addChannel(channel)
-            for program in self.__get_events(region_id):
-                writer.addProgramme(program)
+        for key in self.data.keys():
+            channel_info = self.data[key]
+            writer.addChannel(channel_info['data'])
+        for key in self.data.keys():
+            # self.__init_session()
+            channel_info = self.data[key]
+            region_id = channel_info['data']['region_id']
+            for event in channel_info['events']:
+                event_id = event.get('event_id')
+                if event_id:
+                    sleep(self.conf['event_delay'])
+                    self.add_event_description(event, event_id, region_id)
+                
+                writer.addProgramme(event)
             
         writer.write(args.output, pretty_print=True)
 
+    def __load_program( self, region_id ):
+        url = 'https://tv.mail.ru/ajax/index/'
+        params = 'appearance=list&channel_type=favorite&period=all'
+
+        region_info = '&region_id=%s' % region_id
+
+        log('Read channels')
+
+        read_dates = True
+
+        program_date = date.today() + timedelta(days=args.offset)
+
+        days_count = 0
+        while read_dates and (args.days == 0 or days_count < args.days):
+            # read_dates = False
+            
+            ex_channels = []
+            read_channels = True
+            while read_channels:
+                sleep(self.conf['date_delay'])
+
+                cur_date = program_date.strftime('%Y-%m-%d')
+                r = self.__get_url_data(url, params = params + region_info + self.__ex_channels(ex_channels) + '&date=%s' % (cur_date))
+
+                if r.status_code != requests.codes.ok:
+                    read_channels = False
+                    # sys.exit(1)
+                    continue
+
+                j = r.json()
+
+                cur_date_info = self.__get_date_info(cur_date, j['form']['date']['values'])
+
+                if not cur_date_info or cur_date_info.get('checked') != 1:
+                    read_channels = False
+                    read_dates = False
+                    break
+                    
+                today    = (cur_date_info.get('today') == 1)
+                tomorrow = (cur_date_info.get('tomorrow') == 1)
+
+                cur_offset = j['current_offset'] / 60
+                sign = '+'
+                if cur_offset < 0:
+                    sign = '-'
+                    cur_offset = -cur_offset
+                offset = '%s%02d%02d' %(sign, cur_offset//60, cur_offset%60)
+#                if cur_date_info.get('passed') or (date_count >= args.days and args.days != 0):
+#                    continue
+
+                channel_prefix = self.get_channel_prefix(j)
+
+                for schedule in j['schedule']:
+                    channel = schedule['channel']
+
+                    if not channel['id'] in ex_channels:
+                        ex_channels.append(channel['id'])
+                        
+                    log('date = %s, chanel_id = %4s, name = %s' % (cur_date, channel['id'], channel['name']))
+
+                    channel_id = channel_prefix + channel['id']
+
+                    channel_info = self.data.get(channel_id)
+                    if not channel_info:
+                        channel_data = {'display-name': [(channel['name'], 'ru')],
+                                        'id': channel_id,
+                                        'url': [self.base_url + channel['url']],
+                                        'region_id': region_id,
+                                        }
+                        if channel['pic_url']:
+                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url']}]
+                        
+                        channel_info = {'data': channel_data,
+                                        'events': []
+                                        }
+
+                    if not j['pager']['next']['url']:
+                        read_channels = False
+
+                    events  = schedule['event']
+
+                    prev_time = datetime.strptime(cur_date, '%Y-%m-%d')
+                    next_day = prev_time + timedelta(days=1)
+                    for event in events:
+                        start_time = datetime.strptime(cur_date + ' ' + event['start'], '%Y-%m-%d %H:%M')
+                        if start_time > prev_time:
+                            prev_time = start_time
+                        else:
+                            start_time = start_time + timedelta(days=1)
+
+                        if channel_info['events']:
+                            channel_info['events'][-1]['stop'] = start_time.strftime("%Y%m%d%H%M%S ") + offset
+
+                        log('event_id = %s, name = %s' % (event['id'], event['name']))
+                        
+                        event_data = {'channel'   : channel_prefix + event['channel_id'],
+                                      'title'     : [(event['name'], 'ru')],
+                                      'start'     : start_time.strftime("%Y%m%d%H%M%S ") + offset,
+                                      'stop'      : next_day.strftime("%Y%m%d%H%M%S ") + offset
+                                      }
+                        #episode
+                        episode_num = event.get('episode_num')
+                        if episode_num and episode_num != '0':
+                            event_data['episode-num'] = [(episode_num, 'onscreen')]
+
+                        #sub-title
+                        episode_title = event.get('episode_title')
+                        if episode_title:
+                            event_data['sub-title'] = [(event['episode_title'], 'ru')]
+
+                        if self.conf['des_week'] or today and self.conf['des_today'] or tomorrow and self.conf['des_tomorrow']:
+                            event_data['event_id'] = event['id']
+                        channel_info['events'].append(event_data)
+
+                    self.data[channel_id] = channel_info
+
+            days_count += 1
+            program_date = program_date + timedelta(days=1)
+
+            
+    def __get_date_info( self, cur_date, dates):
+        for date in dates:
+            if date['value'] == cur_date:
+                return date
+                    
+    def __ex_channels( self, ex_channels):
+        return ''.join(['&ex=%s' % channel_id for channel_id in ex_channels])
+                    
     def get_event_info( self, event_id, region_id ):
         url = 'https://tv.mail.ru/ajax/event/'
         params = {'id': event_id,
                   'region_id': region_id}
         r = self.__get_url_data(url, params=params)
+       # r = requests.get(url, params=params)
+       # error('Read code %s, url: %s' % (r.status_code, r.url))
         if r.status_code == requests.codes.ok:
             return r.json()
         else:
@@ -525,8 +930,14 @@ class tv_mail_ru():
                 event_data['category'] = []
                 for genre in genres:
                     #event_data['category'].append((genre['title'], 'ru'))
-                    event_data['category'].append((self.get_category( genre['title'] ), ''))
+                    event_data['category'].append((self.get_category( genre['title'], tv_event['name']), ''))
 
+            #rating
+            age_restrict = tv_event.get('age_restrict')
+            if age_restrict:
+                event_data['rating'] = [{ 'system': u'MPAA', 'value': self.RARS_MPAA(age_restrict)},
+                                        { 'system': u'RARS', 'value': age_restrict}]
+            
             #desc
             descr = tv_event.get('descr')
             if descr:
@@ -538,7 +949,6 @@ class tv_mail_ru():
             if years and len(years):
                 event_data['date'] = str(years['title'])
 
-
             afisha_event = tv_event.get('afisha_event')
             if afisha_event:
                 #url
@@ -549,9 +959,23 @@ class tv_mail_ru():
                 if rate:
                     event_data['star-rating'] = [{'value': '%s / 10' % (rate['val']) }]
 
+    def RARS_MPAA( self, age_restrict ):
+        if age_restrict == '0+':
+            return 'G'
+        elif age_restrict == '6+':
+            return 'PG'
+        elif age_restrict == '12+':
+            return 'PG-13'
+        elif age_restrict == '16+':
+            return 'R'
+        elif age_restrict == '18+':
+            return 'NC-17'
+        else:
+            return ''
+
     def __read_config( self, config_file ):
         parser = configparser.SafeConfigParser()
-        parser.read(self.__get_config_path())
+        parser.read(self.__get_config_path(config_file))
          
         conf = {}
         conf['email'] = parser.get('account', 'email')
