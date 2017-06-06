@@ -76,7 +76,7 @@ class tv_mail_ru():
         self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
-        self.base_url = 'https://tv.mail.ru/'
+        self.base_url = 'https://tv.mail.ru'
 
     def capabilities( self ):
         firts = True
@@ -198,349 +198,289 @@ class tv_mail_ru():
     def get_category( self, genre, title ):
     
         #01 Movie / Drama
-        elif genre in [u'']:
-            result = "Movie"
-        elif genre in [u'драма']:
-            result = "Drama"
-        # elif genre in [u'']:
-            # result = "Detective"
+        if genre in [u'криминал', u'мистика']:
+            result = 'Movie'
+        if genre in [u'драма']:
+            result = 'Drama'
+        elif genre in [u'детективный', u'детектив']:
+            result = 'Detective'
         elif genre in [u'триллер', u'боевик']:
-            result = "Thriller"
+            result = 'Thriller'
         elif genre in [u'приключения']:
-            result = "Adventure"
+            result = 'Adventure'
         elif genre in [u'вестерн']:
-            result = "Western"
+            result = 'Western'
         elif genre in [u'военный']:
-            result = "War"
-        # elif genre in [u'']:
-            # result = "Science fiction"
-        # elif genre in [u'']:
-            # result = "Fantasy"
+            result = 'War'
+        elif genre in [u'фантастика']:
+            result = 'Science fiction'
+        elif genre in [u'фэнтези']:
+            result = 'Fantasy'
         elif genre in [u'ужасы']:
-            result = "Horror"
+            result = 'Horror'
         elif genre in [u'комедия']:
-            result = "Comedy"
+            result = 'Comedy'
         # elif genre in [u'']:
-            # result = "Soap"
+            # result = 'Soap'
         elif genre in [u'мелодрама']:
-            result = "Melodrama"
+            result = 'Melodrama'
         # elif genre in [u'']:
-            # result = "Folkloric"
+            # result = 'Folkloric'
         # elif genre in [u'']:
-            # result = "Romance"
+            # result = 'Romance'
         # elif genre in [u'']:
-            # result = "Serious"
+            # result = 'Serious'
         # elif genre in [u'']:
-            # result = "Classical"
+            # result = 'Classical'
         # elif genre in [u'']:
-            # result = "Religious"
+            # result = 'Religious'
+        elif genre in [u'исторический']:
+            result = 'Historical movie'
         # elif genre in [u'']:
-            # result = "Historical movie"
-        # elif genre in [u'']:
-            # result = "Adult movie"
+            # result = 'Adult movie'
 
         #02 News / Current affairs
+        elif genre in [u'новостное']:
+            result = 'News'
         # elif genre in [u'']:
-            # result = "News"
+            # result = 'Current affairs'
         # elif genre in [u'']:
-            # result = "Current affairs"
+            # result = 'Weather report'
         # elif genre in [u'']:
-            # result = "Weather report"
+            # result = 'News magazine'
+        elif genre in [u'документальное', u'документальный']:
+            result = 'Documentary'
         # elif genre in [u'']:
-            # result = "News magazine"
+            # result = 'Discussion'
         # elif genre in [u'']:
-            # result = "Documentary"
+            # result = 'Interview'
         # elif genre in [u'']:
-            # result = "Discussion"
+            # result = 'Debate'
         # elif genre in [u'']:
-            # result = "Interview"
-        # elif genre in [u'']:
-            # result = "Debate"
-        # elif genre in [u'']:
-            # result = "News / Current Affairs"
+            # result = 'News / Current Affairs'
 
         #03 Show / Game show
+        elif genre in [u'реалити-шоу', u'юмористическое', u'скетч-шоу', u'развлекательное', u'шоу талантов']:
+            result = 'Show'
+        elif genre in [u'игровое', u'интеллектуальное']:
+            result = 'Game show'
         # elif genre in [u'']:
-            # result = "Show"
+            # result = 'Quiz'
         # elif genre in [u'']:
-            # result = "Game show"
+            # result = 'Contest'
         # elif genre in [u'']:
-            # result = "Quiz"
-        # elif genre in [u'']:
-            # result = "Contest"
-        # elif genre in [u'']:
-            # result = "Variety show"
+            # result = 'Variety show'
         elif genre in [u'ток-шоу']:
-            result = "Talk show"
+            result = 'Talk show'
         # elif genre in [u'']:
-            # result = "Show / Game show"
+            # result = 'Show / Game show'
 
         #04 Sports
-        elif genre in [u'спорт']:
-            result = "Sports"
+        elif genre in [u'спорт', u'спортивное']:
+            result = 'Sports'
         # elif genre in [u'']:
-            # result = "Special events (Olympic Games, World Cup, etc.)"
+            # result = 'Special events (Olympic Games, World Cup, etc.)'
         # elif genre in [u'']:
-            # result = "Sports magazines"
+            # result = 'Sports magazines'
         # elif genre in [u'']:
-            # result = "Football"
+            # result = 'Football'
         # elif genre in [u'']:
-            # result = "Soccer"
+            # result = 'Soccer'
         # elif genre in [u'']:
-            # result = "Tennis"
+            # result = 'Tennis'
         # elif genre in [u'']:
-            # result = "Squash"
+            # result = 'Squash'
         # elif genre in [u'']:
-            # result = "Team sports (excluding football)"
+            # result = 'Team sports (excluding football)'
         # elif genre in [u'']:
-            # result = "Athletics"
+            # result = 'Athletics'
         # elif genre in [u'']:
-            # result = "Motor sport"
+            # result = 'Motor sport'
         # elif genre in [u'']:
-            # result = "Water sport"
+            # result = 'Water sport'
         # elif genre in [u'']:
-            # result = "Winter sports"
+            # result = 'Winter sports'
         # elif genre in [u'']:
-            # result = "Equestrian"
+            # result = 'Equestrian'
         # elif genre in [u'']:
-            # result = "Martial sports"
+            # result = 'Martial sports'
 
         #05 Children's / Youth programs
+        elif genre in [u'детское', u'детский']:
+            result = 'Children\'s / Youth programs'
         # elif genre in [u'']:
-            # result = "Children's / Youth programs"
+            # result = 'Pre-school children's programs'
         # elif genre in [u'']:
-            # result = "Pre-school children's programs"
+            # result = 'Entertainment programs for 6 to 14'
         # elif genre in [u'']:
-            # result = "Entertainment programs for 6 to 14"
+            # result = 'Entertainment programs for 10 to 16'
         # elif genre in [u'']:
-            # result = "Entertainment programs for 10 to 16"
+            # result = 'Informational'
         # elif genre in [u'']:
-            # result = "Informational"
+            # result = 'Educational'
         # elif genre in [u'']:
-            # result = "Educational"
+            # result = 'School programs'
+        elif genre in [u'мультфильмы', u'аниме']:
+            result = 'Cartoons'
         # elif genre in [u'']:
-            # result = "School programs"
-        elif genre in [u'мультфильмы']:
-            result = "Cartoons"
-        # elif genre in [u'']:
-            # result = "Puppets"
+            # result = 'Puppets'
 
         #06 Music / Ballet / Dance
+        elif genre in [u'музыкальный']:
+            result = 'Music'
         # elif genre in [u'']:
-            # result = "Music"
+            # result = 'Ballet'
         # elif genre in [u'']:
-            # result = "Ballet"
+            # result = 'Dance'
         # elif genre in [u'']:
-            # result = "Dance"
+            # result = 'Rock'
         # elif genre in [u'']:
-            # result = "Rock"
+            # result = 'Pop'
         # elif genre in [u'']:
-            # result = "Pop"
+            # result = 'Serious music'
         # elif genre in [u'']:
-            # result = "Serious music"
+            # result = 'Classical music'
         # elif genre in [u'']:
-            # result = "Classical music"
+            # result = 'Folk'
         # elif genre in [u'']:
-            # result = "Folk"
+            # result = 'Traditional music'
         # elif genre in [u'']:
-            # result = "Traditional music"
+            # result = 'Jazz'
+        elif genre in [u'мюзикл', u'музыкальные']:
+            result = 'Musical'
         # elif genre in [u'']:
-            # result = "Jazz"
+            # result = 'Opera'
         # elif genre in [u'']:
-            # result = "Musical"
+            # result = 'Ballet'
         # elif genre in [u'']:
-            # result = "Opera"
-        # elif genre in [u'']:
-            # result = "Ballet"
-        # elif genre in [u'']:
-            # result = "Music / Ballet / Dance"
+            # result = 'Music / Ballet / Dance'
 
         #07 Arts / Culture (without music)
         # elif genre in [u'']:
-            # result = "Arts"
+            # result = 'Arts'
         # elif genre in [u'']:
-            # result = "Culture (without music)"
+            # result = 'Culture (without music)'
         # elif genre in [u'']:
-            # result = "Performing arts"
+            # result = 'Performing arts'
         # elif genre in [u'']:
-            # result = "Fine arts"
+            # result = 'Fine arts'
         # elif genre in [u'']:
-            # result = "Religion"
+            # result = 'Religion'
         # elif genre in [u'']:
-            # result = "Popular culture"
+            # result = 'Popular culture'
         # elif genre in [u'']:
-            # result = "Traditional arts"
+            # result = 'Traditional arts'
         # elif genre in [u'']:
-            # result = "Literature"
+            # result = 'Literature'
         # elif genre in [u'']:
-            # result = "Film"
+            # result = 'Film'
         # elif genre in [u'']:
-            # result = "Cinema"
+            # result = 'Cinema'
         # elif genre in [u'']:
-            # result = "Experimental film"
+            # result = 'Experimental film'
         # elif genre in [u'']:
-            # result = "Video"
+            # result = 'Video'
         # elif genre in [u'']:
-            # result = "Broadcasting"
+            # result = 'Broadcasting'
         # elif genre in [u'']:
-            # result = "Press"
+            # result = 'Press'
         # elif genre in [u'']:
-            # result = "New media"
+            # result = 'New media'
         # elif genre in [u'']:
-            # result = "Arts magazines"
+            # result = 'Arts magazines'
         # elif genre in [u'']:
-            # result = "Culture magazines"
+            # result = 'Culture magazines'
+        elif genre in [u'шоу о моде и красоте']:
+            result = 'Fashion'
         # elif genre in [u'']:
-            # result = "Fashion"
-        # elif genre in [u'']:
-            # result = "Arts / Culture (without music)"
+            # result = 'Arts / Culture (without music)'
 
         #08 Social / Political issues / Economics
+        elif genre in [u'аналитическое']:
+            result = 'Social'
         # elif genre in [u'']:
-            # result = "Social"
+            # result = 'Political issues'
         # elif genre in [u'']:
-            # result = "Political issues"
+            # result = 'Economics'
         # elif genre in [u'']:
-            # result = "Economics"
+            # result = 'Magazines'
         # elif genre in [u'']:
-            # result = "Magazines"
+            # result = 'Reports'
         # elif genre in [u'']:
-            # result = "Reports"
+            # result = 'Documentary'
         # elif genre in [u'']:
-            # result = "Documentary"
+            # result = 'Economics'
         # elif genre in [u'']:
-            # result = "Economics"
+            # result = 'Social advisory'
         # elif genre in [u'']:
-            # result = "Social advisory"
+            # result = 'Remarkable people'
         # elif genre in [u'']:
-            # result = "Remarkable people"
-        # elif genre in [u'']:
-            # result = "Social / Political issues / Economics"
+            # result = 'Social / Political issues / Economics'
 
         #09 Education / Science / Factual topics
         # elif genre in [u'']:
-            # result = "Education"
+            # result = 'Education'
+        elif genre in [u'научно-познавательное']:
+            result = 'Science'
         # elif genre in [u'']:
-            # result = "Science"
+            # result = 'Factual topics'
         # elif genre in [u'']:
-            # result = "Factual topics"
+            # result = 'Nature'
         # elif genre in [u'']:
-            # result = "Nature"
+            # result = 'Animals'
         # elif genre in [u'']:
-            # result = "Animals"
+            # result = 'Environment'
         # elif genre in [u'']:
-            # result = "Environment"
+            # result = 'Technology'
         # elif genre in [u'']:
-            # result = "Technology"
+            # result = 'Natural sciences'
         # elif genre in [u'']:
-            # result = "Natural sciences"
+            # result = 'Medicine'
         # elif genre in [u'']:
-            # result = "Medicine"
+            # result = 'Physiology'
         # elif genre in [u'']:
-            # result = "Physiology"
+            # result = 'Psychology'
         # elif genre in [u'']:
-            # result = "Psychology"
+            # result = 'Foreign countries'
         # elif genre in [u'']:
-            # result = "Foreign countries"
+            # result = 'Expeditions'
         # elif genre in [u'']:
-            # result = "Expeditions"
+            # result = 'Social'
         # elif genre in [u'']:
-            # result = "Social"
+            # result = 'Spiritual sciences'
         # elif genre in [u'']:
-            # result = "Spiritual sciences"
+            # result = 'Further education'
         # elif genre in [u'']:
-            # result = "Further education"
+            # result = 'Languages'
         # elif genre in [u'']:
-            # result = "Languages"
-        # elif genre in [u'']:
-            # result = "Education / Science / Factual topics"
+            # result = 'Education / Science / Factual topics'
 
         #10 Leisure hobbies
         # elif genre in [u'']:
-            # result = "Leisure hobbies"
+            # result = 'Leisure hobbies'
+        elif genre in [u'шоу о путешествиях', u'приключенческое']:
+            result = 'Tourism / Travel'
         # elif genre in [u'']:
-            # result = "Tourism / Travel"
+            # result = 'Handicraft'
         # elif genre in [u'']:
-            # result = "Handicraft"
+            # result = 'Motoring'
+        elif genre in [u'шоу о здоровье']:
+            result = 'Fitness and health'
+        elif genre in [u'кулинарное']:
+            result = 'Cooking'
         # elif genre in [u'']:
-            # result = "Motoring"
+            # result = 'Advertisement / Shopping'
         # elif genre in [u'']:
-            # result = "Fitness and health"
+            # result = 'Gardening'
         # elif genre in [u'']:
-            # result = "Cooking"
-        # elif genre in [u'']:
-            # result = "Advertisement / Shopping"
-        # elif genre in [u'']:
-            # result = "Gardening"
-        # elif genre in [u'']:
-            # result = "Leisure hobbies"
+            # result = 'Leisure hobbies'
 
-        # elif genre == u'детективный':
-            # result = "Detective"
-        # elif genre == u'документальное':
-            # result = "Documentary"
-        # elif genre == u'фантастика':
-            # result = "Science fiction"
-        # elif genre == u'фэнтези':
-            # result = "Fantasy"
-        # elif genre = u'детектив':
-            # result = "Detective"
-        # elif genre in (u'боевик', u'криминал', u'мистика', u'семейный', u'криминал', u'мюзикл'):
-            # result = "Movie"
-        # elif genre == u'исторический':
-            # result = "Historical movie"
-        # elif genre == u'новостное':
-            # result = "News"
-
-        elif genre == u'детский':
-            result = "Children's / Youth programs"
-
+        elif genre in [u'семейный', u'короткометражный', u'биография']:
+            result = ''
         else:
-            result = genre
+            result = ''
             error('unknown genre "%s" at "%s" ' % (genre, title) )
         return result
-
-    def __get_channels( self, region_id ):
-        url = 'https://tv.mail.ru/ajax/index/'
-        params = 'appearance=list&channel_type=favorite&period=now'
-
-        ex_channels = ''
-        region_info = '&region_id=%s' % region_id
-
-        log('Read channels')
-
-        read_channels = True
-        while read_channels:
-            r = self.__get_url_data(url, params=params+region_info+ex_channels)
-
-            if r.status_code != requests.codes.ok:
-                read_channels = False
-                sys.exit(1)
-                continue
-
-            j = r.json()
-            channel_prefix = self.get_channel_prefix(j)
-
-            if not self.dates:
-                self.dates = j['form']['date']['values']
-
-            for schedule in j['schedule']:
-                channel = schedule['channel']
-
-                ex_channels = ex_channels + '&ex=%s' % channel['id']
-                log('chanel_id = %5s, name = %s' % (channel['id'], channel['name']))
-
-                channel_data = {'display-name': [(channel['name'], 'ru')],
-                                'id': channel_prefix + channel['id'],
-                                'url': [self.base_url + channel['url']],
-                               }
-                if channel['pic_url']:
-                    channel_data['icon'] = [{'src': self.base_url + channel['pic_url']}]
-
-                yield channel_data
-
-            if not j['pager']['next']['url']:
-                read_channels = False
 
     def get_channel_prefix(self, j):
         prefix = ''
@@ -562,109 +502,6 @@ class tv_mail_ru():
             count += 1
             sleep(read_delay * count)
         return r
-
-    def __get_events( self, region_id ):
-        url = 'https://tv.mail.ru/ajax/index/'
-        params = 'appearance=list&channel_type=favorite&period=all'
-        ex_channels = ''
-
-        region_info = '&region_id=%s' % region_id
-        #channel_prefix = '%s-' % region['title']
-
-        log('Read events')
-
-        read_channels = True
-        while read_channels:
-            first_date = True
-            new_ex_channels = ''
-
-            last_evets = {}
-            date_count = 0
-            for date in self.dates:
-                cur_date = date['value']
-
-                sleep(self.conf['date_delay'])
-
-                today = (date.get('today') == 1)
-                tomorrow = (date.get('tomorrow') == 1)
-
-                if date.get('passed') or (date_count >= args.days and args.days != 0):
-                    continue
-
-                date_count += 1
-
-                r = self.__get_url_data(url, params=params+region_info+ex_channels+'&date=%s' % (cur_date))
-                if r.status_code != requests.codes.ok:
-                    read_channels = False
-                    continue
-
-                j = r.json()
-                channel_prefix = self.get_channel_prefix(j)
-
-                if first_date and not j['pager']['next']['url']:
-                    read_channels = False
-
-                cur_offset = j['current_offset'] / 60
-                sign = '+'
-                if cur_offset < 0:
-                    sign = '-'
-                    cur_offset = -cur_offset
-                offset = '%s%02d%02d' %(sign, cur_offset//60, cur_offset%60)
-
-                for schedule in j['schedule']:
-                    events  = schedule['event']
-
-                    channel_id = schedule['channel']['id']
-
-                    log('chanel_id = %5s, name = %s' % (schedule['channel']['id'], schedule['channel']['name']))
-
-                    if first_date:
-                        new_ex_channels = new_ex_channels + '&ex=%s' % channel_id
-
-                    prev_time = datetime.strptime(cur_date, '%Y-%m-%d')
-                    next_day = prev_time + timedelta(days=1)
-                    for event in events:
-                        start_time = datetime.strptime(cur_date + ' ' + event['start'], '%Y-%m-%d %H:%M')
-                        if start_time > prev_time:
-                            prev_time = start_time
-                        else:
-                            start_time = start_time + timedelta(days=1)
-
-                        last_evet = last_evets.get(channel_id)
-                        if last_evet:
-                            last_evet['stop'] = start_time.strftime("%Y%m%d%H%M%S ") + offset
-                            yield last_evet
-
-                        log('event_id = %s, name = %s' % (event['id'], event['name']))
-                        
-                        event_data = {'channel'   : channel_prefix + event['channel_id'],
-                                      'title'     : [(event['name'], 'ru')],
-                                      'start'     : start_time.strftime("%Y%m%d%H%M%S ") + offset,
-                                      'stop'      : next_day.strftime("%Y%m%d%H%M%S ") + offset
-                                      }
-                        #episode
-                        episode_num = event.get('episode_num')
-                        if episode_num and episode_num != '0':
-                            event_data['episode-num'] = [(episode_num, 'onscreen')]
-
-                        #sub-title
-                        episode_title = event.get('episode_title')
-                        if episode_title:
-                            event_data['sub-title'] = [(event['episode_title'], 'ru')]
-
-
-                        if self.conf['des_week'] or today and self.conf['des_today'] or tomorrow and self.conf['des_tomorrow']:
-                            sleep(self.conf['event_delay'])
-                            self.add_event_description(event_data, event['id'], region_id)
-                        last_evets[channel_id] = event_data
-
-                first_date = False
-
-            ex_channels = ex_channels + new_ex_channels
-            for key in last_evets.keys():
-                last_evet = last_evets.get(key)
-                if last_evet:
-                    yield last_evet
 
     def __init_session(self):
         self.s = requests.Session()
@@ -811,7 +648,7 @@ class tv_mail_ru():
                                         'region_id': region_id,
                                         }
                         if channel['pic_url']:
-                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url']}]
+                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url'].replace('32x32', '64x64')}]
                         
                         channel_info = {'data': channel_data,
                                         'events': []
@@ -928,9 +765,14 @@ class tv_mail_ru():
             genres = tv_event.get('genre')
             if genres:
                 event_data['category'] = []
+                categories = []
                 for genre in genres:
                     #event_data['category'].append((genre['title'], 'ru'))
-                    event_data['category'].append((self.get_category( genre['title'], tv_event['name']), ''))
+                    category = self.get_category( genre['title'], tv_event['name'])
+                    if category and not category in categories:
+                        categories.append(category)
+                for category in categories:
+                    event_data['category'].append((category, ''))
 
             #rating
             age_restrict = tv_event.get('age_restrict')
