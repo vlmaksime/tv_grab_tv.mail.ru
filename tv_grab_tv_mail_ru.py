@@ -61,8 +61,8 @@ def query_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' "\
                              "(or 'y' or 'n').\n")
 
-def log(message):
-    if not args.quiet:
+def log( message, force_quiet=False ):
+    if not (args.quiet or force_quiet):
         sys.stdout.write(message.encode('utf-8') + '\n')
         pass
         
@@ -72,7 +72,7 @@ def error(message):
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.2.1'
+        self._version = '0.2.2'
         self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
@@ -96,10 +96,10 @@ class tv_mail_ru():
 
     def configure( self ):
         parser = configparser.SafeConfigParser()
-        config_file = open(self.__get_config_path(config_file), "w")
+        config_file = open(self.__get_config_path(args.config_file), "w")
 
         parser.add_section('general')
-        parser.set('general', 'conf_ver', '1')
+        parser.set('general', 'conf_ver', '2')
 
         parser.add_section('account')
 
@@ -115,9 +115,9 @@ class tv_mail_ru():
             region_ids = ''
             
         if region_ids:
-             sys.stdout.write('Selected regions: %s' % region_ids)
+             log('Selected regions: %s' % region_ids)
         else:
-            sys.stdout.write('The default region will be used')
+            log('The default region will be used')
 
         parser.add_section('settings')
         parser.set('settings', 'date_delay', '0.3')
@@ -134,6 +134,10 @@ class tv_mail_ru():
                 parser.set('settings', 'des_today', '1')
             if query_yes_no('Get the description of the program for tomorrow?') == 'yes':
                 parser.set('settings', 'des_tommorow', '1')
+
+        parser.set('settings', 'force_quiet', '0')
+        if query_yes_no('Always enable quiet argument? Need for TVHeadend 4.0', 'no') == 'yes':
+            parser.set('settings', 'force_quiet', '1')
         
         parser.write(config_file)
         sys.exit(0)
@@ -166,16 +170,16 @@ class tv_mail_ru():
                         if region_id:
                             regions += ', ' + region_id
                     else:
-                        sys.stdout.write('Region not fount')
+                        log('Region not fount')
             enter_region = (query_yes_no('Do you want to add another region?') == 'yes')
         return regions[2:]
             
     def __show_region_list(self, region_list, regions, title):
         if len(region_list) > 0:
-            sys.stdout.write(title)
+            log(title)
             for region_id in region_list:
                 region_name = self.__get_region_name(region_id, regions)
-                sys.stdout.write('id: %s , name: %s' % (region_id, region_name) ) 
+                log('id: %s , name: %s' % (region_id, region_name) ) 
         
     def __get_region_name( self, region_id, regions ):
         region_info = regions.get(region_id)
@@ -548,7 +552,7 @@ class tv_mail_ru():
         self.str_guest  = u'Участники'
         
         if self .__web_login():
-            log('Login success')
+            log('Login success', self.conf['force_quiet'])
         else:
             error('Login failure')
             sys.exit(1)
@@ -557,7 +561,7 @@ class tv_mail_ru():
         
         writer = xmltv.Writer()
         for region_id in self.conf['regions']:
-            log('Read region_id = %s' % region_id)
+            log('Read region_id = %s' % region_id, self.conf['force_quiet'])
             self.__web_read_region_cookies(region_id)
             self.__load_program(region_id)
             
@@ -584,7 +588,7 @@ class tv_mail_ru():
 
         region_info = '&region_id=%s' % region_id
 
-        log('Read channels')
+        log('Read channels', self.conf['force_quiet'])
 
         read_dates = True
 
@@ -636,7 +640,7 @@ class tv_mail_ru():
                     if not channel['id'] in ex_channels:
                         ex_channels.append(channel['id'])
                         
-                    log('date = %s, chanel_id = %4s, name = %s' % (cur_date, channel['id'], channel['name']))
+                    log('date = %s, chanel_id = %4s, name = %s' % (cur_date, channel['id'], channel['name']), self.conf['force_quiet'])
 
                     channel_id = channel_prefix + channel['id']
 
@@ -671,7 +675,7 @@ class tv_mail_ru():
                         if channel_info['events']:
                             channel_info['events'][-1]['stop'] = start_time.strftime("%Y%m%d%H%M%S ") + offset
 
-                        log('event_id = %s, name = %s' % (event['id'], event['name']))
+                        log('event_id = %s, name = %s' % (event['id'], event['name']), self.conf['force_quiet'])
                         
                         event_data = {'channel'   : channel_prefix + event['channel_id'],
                                       'title'     : [(event['name'], 'ru')],
@@ -820,6 +824,8 @@ class tv_mail_ru():
         parser.read(self.__get_config_path(config_file))
          
         conf = {}
+        conf_ver = parser.getint('general', 'conf_ver')
+        
         conf['email'] = parser.get('account', 'email')
         conf['password'] = parser.get('account', 'password')
 
@@ -834,7 +840,12 @@ class tv_mail_ru():
         conf['des_week'] = parser.getboolean('settings', 'des_week')
         conf['des_today'] = parser.getboolean('settings', 'des_today')
         conf['des_tomorrow'] = parser.getboolean('settings', 'des_tommorow')
-   
+        
+        if conf_ver >= 2:
+            conf['force_quiet'] = parser.getboolean('settings', 'force_quiet')
+        else:
+            conf['force_quiet'] = False
+        
         return conf
 
 if __name__ == "__main__":
