@@ -73,7 +73,7 @@ def error(message):
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.2.3'
+        self._version = '0.2.4'
         self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
@@ -241,8 +241,8 @@ class tv_mail_ru():
             # result = 'Religious'
         elif genre in [u'исторический']:
             result = 'Historical movie'
-        # elif genre in [u'']:
-            # result = 'Adult movie'
+        elif genre in [u'эротика']:
+            result = 'Adult movie'
 
         #02 News / Current affairs
         elif genre in [u'новостное']:
@@ -518,14 +518,17 @@ class tv_mail_ru():
 
     def __web_login( self ):
         url  = 'https://auth.mail.ru/cgi-bin/auth'
-        data = {'Login':         self.conf['email'],
+        email_parts = self.conf['email'].split('@')
+        data = {'Login':         email_parts[0],
+                'Domain':        email_parts[1],
                 'Password':      self.conf['password'],
                 'new_auth_form': '1',
                 'saveauth':      '0',
                 }
-
-
-        self.s.post(url, data = data)
+        headers = {'Host': 'auth.mail.ru',
+                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:61.0) Gecko/20100101 Firefox/61.0',
+                   }
+        r = self.s.post(url, data = data, headers=headers)
 
         url = 'https://portal.mail.ru/NaviData'
         r = self.s.get(url)
