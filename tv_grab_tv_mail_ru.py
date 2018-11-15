@@ -617,6 +617,12 @@ class tv_mail_ru():
 
                 j = r.json()
 
+                for value in j['form']['channel_type']['values']:
+                    if (value['value'] == 'favorite') and (value['count'] < 1):
+                        read_channels = False
+                        read_dates = False
+                        break
+
                 cur_date_info = self.__get_date_info(cur_date, j['form']['date']['values'])
 
                 if not cur_date_info or cur_date_info.get('checked') != 1:
