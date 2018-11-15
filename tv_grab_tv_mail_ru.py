@@ -673,6 +673,9 @@ class tv_mail_ru():
 
                     events  = schedule['event']
 
+                    if not events:
+                        continue
+
                     prev_time = datetime.strptime(cur_date, '%Y-%m-%d')
                     next_day = prev_time + timedelta(days=1)
                     for event in events:
