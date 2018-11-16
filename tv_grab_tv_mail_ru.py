@@ -662,7 +662,7 @@ class tv_mail_ru():
                                         'region_id': region_id,
                                         }
                         if channel['pic_url']:
-                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url'].replace('32x32', '64x64')}]
+                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url']}]
 
                         channel_info = {'data': channel_data,
                                         'events': []
