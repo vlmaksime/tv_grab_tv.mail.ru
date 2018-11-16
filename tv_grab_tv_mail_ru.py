@@ -73,7 +73,7 @@ def error(message):
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.2.4'
+        self._version = '0.2.5'
         self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
