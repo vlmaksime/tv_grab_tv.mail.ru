@@ -73,7 +73,7 @@ def error(message):
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.2.4'
+        self._version = '0.2.5'
         self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
@@ -617,6 +617,12 @@ class tv_mail_ru():
 
                 j = r.json()
 
+                for value in j['form']['channel_type']['values']:
+                    if (value['value'] == 'favorite') and (value['count'] < 1):
+                        read_channels = False
+                        read_dates = False
+                        break
+
                 cur_date_info = self.__get_date_info(cur_date, j['form']['date']['values'])
 
                 if not cur_date_info or cur_date_info.get('checked') != 1:
@@ -656,7 +662,7 @@ class tv_mail_ru():
                                         'region_id': region_id,
                                         }
                         if channel['pic_url']:
-                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url'].replace('32x32', '64x64')}]
+                            channel_data['icon'] = [{'src': self.base_url + channel['pic_url']}]
 
                         channel_info = {'data': channel_data,
                                         'events': []
@@ -666,6 +672,9 @@ class tv_mail_ru():
                         read_channels = False
 
                     events  = schedule['event']
+
+                    if not events:
+                        continue
 
                     prev_time = datetime.strptime(cur_date, '%Y-%m-%d')
                     next_day = prev_time + timedelta(days=1)
