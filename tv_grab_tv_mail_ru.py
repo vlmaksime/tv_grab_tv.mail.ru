@@ -73,7 +73,7 @@ def error(message):
 class tv_mail_ru():
     def __init__( self ):
 
-        self._version = '0.2.5'
+        self._version = '0.2.6'
         self._description = 'XMLTV Grabber for tv.mail.ru'
         self._capabilities = ['baseline', 'manualconfig']
 
@@ -696,7 +696,7 @@ class tv_mail_ru():
                                       'stop'      : next_day.strftime("%Y%m%d%H%M%S ") + offset
                                       }
                         #episode
-                        episode_num = event.get('episode_num')
+                        episode_num = '{}'.format(event.get('episode_num'))
                         if episode_num and episode_num != '0':
                             event_data['episode-num'] = [(episode_num, 'onscreen')]
 
@@ -792,10 +792,10 @@ class tv_mail_ru():
                     event_data['category'].append((category, ''))
 
             #rating
-            age_restrict = tv_event.get('age_restrict')
+            age_restrict = '{}'.format(tv_event.get('age_restrict'))
             if age_restrict:
-                event_data['rating'] = [{ 'system': u'MPAA', 'value': self.RARS_MPAA(age_restrict)},
-                                        { 'system': u'RARS', 'value': age_restrict}]
+                event_data['rating'] = [{ 'system': u'MPAA', 'value': self.MPAA(age_restrict)},
+                                        { 'system': u'RARS', 'value': self.RARS(age_restrict)}]
 
             #desc
             descr = tv_event.get('descr')
@@ -819,16 +819,31 @@ class tv_mail_ru():
                 if rate:
                     event_data['star-rating'] = [{'value': '%s / 10' % (rate['val']) }]
 
-    def RARS_MPAA( self, age_restrict ):
-        if age_restrict == '0+':
+# {age_restrict:{1:0,2:0,3:6,4:12,5:16,6:18},mpaa:{13:"PG-13",17:"NC-17",G:"G",PG:"PG",R:"R"}}
+    def RARS( self, age_restrict ):
+        if age_restrict in ['1, 2'] :
+            return '0+'
+        elif age_restrict == '3':
+            return '6+'
+        elif age_restrict == '4':
+            return '12+'
+        elif age_restrict == '5':
+            return '16+'
+        elif age_restrict == '6':
+            return '18+'
+        else:
+            return ''
+
+    def MPAA( self, age_restrict ):
+        if age_restrict in ['1, 2'] :
             return 'G'
-        elif age_restrict == '6+':
+        elif age_restrict == '3':
             return 'PG'
-        elif age_restrict == '12+':
+        elif age_restrict == '4':
             return 'PG-13'
-        elif age_restrict == '16+':
+        elif age_restrict == '5':
             return 'R'
-        elif age_restrict == '18+':
+        elif age_restrict == '6':
             return 'NC-17'
         else:
             return ''
